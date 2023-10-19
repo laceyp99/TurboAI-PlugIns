@@ -21,7 +21,7 @@ A python script using OpenAI's 'gpt-3.5-turbo' model that uses function calling 
 2. **Install the required libraries:**
 
     ```bash
-    pip install openai wolfram
+    pip install os json requests datetime psutil openai wolfram
     ```
 
 3. **Get API Keys:**
