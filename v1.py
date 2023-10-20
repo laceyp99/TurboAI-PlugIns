@@ -131,33 +131,29 @@ def get_time_and_day(now): # added param to use in function calling
 def answer_complex_question(question):
     # Create a Wolfram Alpha client object
     client = wolframalpha.Client(wolfram_api_key)
-    response = client.query(question, output='full') # full results API
+    result = ""
+    # Make a query to the Wolfram Alpha Simple API
+    response = client.query(question, output='simple')
     if (response['@success'] == True):
-        answer = ""  # Initialize an empty string
-        numpods = int(response['@numpods']) # number of pods in the response
-        for i in range(1, numpods): # iterate through the pods and parse data
-            pods = response['pod'][i]
-            title = pods['@title']
-            answer += f"{title}:\n" # add the title of the pod to the answer
-            num_subpods = pods['@numsubpods'] # number of subpods in the pod
-            if (num_subpods == 1): # if just one subpod, just parse the data once
-                if (pods['subpod']['plaintext'] != None): # add the plaintext to the answer
-                    plaintext = pods['subpod']['plaintext']
-                    answer += f"{plaintext}\n"
-                else: # if there isn't plaintext, it will be an image. add the image source to the answer
-                    src = pods['subpod']['img']['@src']
-                    answer += f"Image Source: {src}\n"
-            else: # if more than one subpod, iterate through the subpods and parse the data
-                for p in range(0, num_subpods):
-                    if (pods['subpod'][p]['plaintext'] != None):
-                        plaintext = pods['subpod'][p]['plaintext']
-                        answer += f"{plaintext}\n"
-                    else:
-                        src = pods['subpod'][p]['img']['@src']
-                        answer += f"Image Source: {src}\n"
-    else: # wolfram alpha query failed
-        answer = "Query failed. Try again."
-    return answer
+        numpods = int(response['@numpods'])
+        for i in range(1, numpods):
+            text = response['pod'][i]['@title']
+            if text == 'Results':
+                numsubpods = int(response['pod'][i]['@numsubpods'])
+                for j in range(0, numsubpods):
+                    result += f"{response['pod'][i]['subpod'][j]['plaintext']} \n" 
+            else:
+                continue
+    return result
+
+def summarize(messages): # summarize function result related to the prompt
+    summary = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        temperature=0,
+        messages=messages,
+    )
+    sum = summary["choices"][0]["message"]["content"]
+    return sum
 
 def ask_and_reply(prompt): # the main function that asks the prompt and replies with the answer
     messages.append({"role": "user", "content": prompt}) # add the prompt to the messages list above
@@ -169,31 +165,45 @@ def ask_and_reply(prompt): # the main function that asks the prompt and replies 
     )
     # determine whether the model called a function or not
     if "function_call" in response["choices"][0]["message"]:
+        funtion_call_message = response['choices'][0]['message']
         chosen_function = eval(response["choices"][0]["message"]["function_call"]["name"])
         # lists the arguments of the function call in a JSON object in the case of multiple arguments
         chosen_args = json.loads(response["choices"][0]["message"]["function_call"]["arguments"]) 
+        messages.append(funtion_call_message)
         if (chosen_function == get_weather_info):
-            answer = chosen_function(chosen_args["city"], chosen_args["state"])
+            function_answer = chosen_function(chosen_args["city"], chosen_args["state"])
+            messages.append({"role": "function", "name": "get_current_weather", "content": f"{function_answer}"})
+            answer = summarize(messages)
         elif (chosen_function == get_battery_info):
             if "device" not in chosen_args:     # if the model didn't supply a device, default to "computer"
-                answer = chosen_function("computer")
+                function_answer = chosen_function("computer")
             else:
-                answer = chosen_function(chosen_args["device"])
+                function_answer = chosen_function(chosen_args["device"])
+            messages.append({"role": "function", "name": "get_battery_info", "content": f"{function_answer}"})
+            answer = summarize(messages)
         elif (chosen_function == get_time_and_day):
             if "now" not in chosen_args:        # if the model didn't supply this placeholder param, default to "now"
-                answer = chosen_function("now")
+                function_answer = chosen_function("now")
             else:
-                answer = chosen_function(chosen_args["now"])
+                function_answer = chosen_function(chosen_args["now"])
+            messages.append({"role": "function", "name": "get_time_and_day", "content": f"{function_answer}"})
+            answer = summarize(messages)
         elif (chosen_function == answer_complex_question):
-            answer = chosen_function(chosen_args["question"])
+            function_answer = chosen_function(chosen_args["question"])
+            messages.append({"role": "function", "name": "answer_complex_question", "content": f"{function_answer}"})
+            answer = summarize(messages)
         else:   # if the model called a function name that isn't the name of any functions above, answer with an error message
             answer = ("Sorry, I couldn't find that function.") # this shouldn't happen but just in case
     else:
         # this is the case where the model didn't call a function and just responded with a string 
         answer = response["choices"][0]["message"]["content"]
+        
+    # total = response["usage"]["total_tokens"]
     print(answer) # print the answer for the user to read
+    # print(f"Total Tokens: {total}") # print the usage of the function for the user to read (optional
     # append the answer to the messages list above for the model to build the conversational context
     messages.append({"role": "assistant", "content": answer})
+    # print(messages)
 
 def main(): # the conversational loop
     while True:
