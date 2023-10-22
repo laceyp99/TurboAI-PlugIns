@@ -143,7 +143,11 @@ def answer_complex_question(question):
                 for j in range(0, numsubpods):
                     result += f"{response['pod'][i]['subpod'][j]['plaintext']} \n" 
             else:
+                result = response
                 continue
+    else:
+        result = ("Sorry, I couldn't get an answer to that question.")
+    # print(result)
     return result
 
 def summarize(messages): # summarize function result related to the prompt
