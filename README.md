@@ -1,5 +1,5 @@
 # TurboAI-PlugIns
-A python script using OpenAI's 'gpt-3.5-turbo' model that uses function calling to create a plug-in like feature. Linked with Wolfram Alpha, OpenWeather, and other common python libraries, this allows the model to supply users with verified answers as well as real-time data.
+A python script using OpenAI's 'gpt-4' model that uses function calling to create a plug-in like feature. Linked with Wolfram Alpha, OpenWeather, and other common python libraries, this allows the model to supply users with verified answers as well as real-time data.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ A python script using OpenAI's 'gpt-3.5-turbo' model that uses function calling 
 
 ## Pricing
 
-If you read through my write up (which is the file 'TurboAI-PlugIns.pdf' in this repository) you can see that this plug-in feature is usually only available using the GPT 4 model which requires a monthly subscription. This script notably reduces the price. The only cost of running this script is the usage prices that are associated with the respective API keys. OpenWeather and Wolfram both have free plans that come with usage limits. Wolfram has a limit of 2,000 non commercial API calls per month, and OpenWeather limits users to 60 calls per minute. The OpenAI API pricing doesn't have a free plan, but using model 'gpt-3.5-turbo' costs about a tenth of a cent per every thousand tokens which is pretty insignificant for a personal use chatbot.
+If you read through my write up (which is the file 'TurboAI-PlugIns.pdf' in this repository) you can see that this plug-in feature is usually only available using the GPT 4 model within the webbrowser which requires a monthly subscription. This script notably reduces the price. The only cost of running this script is the usage prices that are associated with the respective API keys. OpenWeather and Wolfram both have free plans that come with usage limits. Wolfram has a limit of 2,000 non commercial API calls per month, and OpenWeather limits users to 60 calls per minute. The OpenAI API pricing doesn't have a free plan, but using model 'gpt-4' or 'gpt-3.5-turbo' costs anywhere from a few cents to a tenth a cent per every thousand tokens which is pretty insignificant for a personal use chatbot.
 
 ## Future Improvements
 
