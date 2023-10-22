@@ -31,7 +31,7 @@ multiple_function_descriptions = [
     },
     {
         "name": "answer_complex_question",
-        "description": "Gets the answer of a complex mathematical or computational question.", # using wolfram alpha's full result API
+        "description": "Gets the answer of a complex mathematical or computational question.", # using wolfram alpha's API
         "parameters": {
             "type": "object",
             "properties": {
@@ -152,7 +152,7 @@ def answer_complex_question(question):
 
 def summarize(messages): # summarize function result related to the prompt
     summary = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         temperature=0,
         messages=messages,
     )
@@ -162,7 +162,8 @@ def summarize(messages): # summarize function result related to the prompt
 def ask_and_reply(prompt): # the main function that asks the prompt and replies with the answer
     messages.append({"role": "user", "content": prompt}) # add the prompt to the messages list above
     response = openai.ChatCompletion.create( 
-        model="gpt-3.5-turbo",
+        model="gpt-4",
+        temperature = 0,
         messages=messages,
         functions = multiple_function_descriptions,
         function_call="auto" # the model can choose which function to call based on the prompt
